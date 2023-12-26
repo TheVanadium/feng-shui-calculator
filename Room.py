@@ -41,4 +41,4 @@ class Room:
         for i, wall_break in enumerate(wall_breaks):
             if i == 0: continue
             if wall_break.position < self.wall_breaks[i-1].get_end_point():
-                raise Exception(f"Wall breaks cannot overlap. Overlapping wall breaks: {self.wall_breaks[i-1]} and {wall_break}")
+                raise Exception(f"Wall breaks cannot overlap. Overlapping wall break: {self.wall_breaks[i-1]} and {wall_break}")
