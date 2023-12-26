@@ -36,9 +36,26 @@ class Room:
         self.dimension_ratio = dimension_ratio
         if self.dimension_ratio <= 0:
             raise Exception(f"Dimension ratio must be greater than 0. Input dimension ratio: {self.dimension_ratio}")
+        
         self.wall_breaks = wall_breaks
         self.wall_breaks.sort()
         for i, wall_break in enumerate(wall_breaks):
             if i == 0: continue
             if wall_break.position < self.wall_breaks[i-1].get_end_point():
                 raise Exception(f"Wall breaks cannot overlap. Overlapping wall break: {self.wall_breaks[i-1]} and {wall_break}")
+        
+        def get_corner_points(self):
+            corner_points = []
+
+            horizontal_wall_length = 50-(50/(self.dimension_ratio+1))
+            vertical_wall_length = 50-horizontal_wall_length
+
+            corner_points.append(0)
+            corner_points.append(horizontal_wall_length)
+            corner_points.append(50)
+            corner_points.append(100-vertical_wall_length)
+
+            corner_points = [round(point, 3) for point in corner_points]
+
+            return corner_points
+        self.corner_points = get_corner_points()
