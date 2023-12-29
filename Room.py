@@ -86,6 +86,12 @@ class Room:
         
         if current_position != HOME_POSITION: raise Exception(f"Room is not closed. End wall terminates at: {current_position}")
 
+    def get_length(self):
+        length = 0
+        for wall in self.walls:
+            length += wall.length
+        return length
+
     def get_feature(self, wall_index: int, point: int):
         """Gets the feature of a wall at a given point.
         
@@ -102,3 +108,25 @@ class Room:
         if wall_index < 0 or wall_index >= len(self.walls):
             raise Exception(f"Wall index {wall_index} is out of bounds. Number of walls: {len(self.walls)}")
         return self.walls[wall_index].get_feature(point)
+
+    def get_feature(self, point: int):
+        """Gets the feature of a room at a given point
+        
+        The point is relative to the first corner of the room (HOME_POSITION, as described
+        in __init__()), traversing along the walls in the order they were given.
+
+        Args:
+            point (int): The point to check.
+
+        Returns:
+            The feature of the room at the given point.
+
+        Raises:
+            Exception: If the point is out of bounds.
+        """
+        if point < 0 or point > self.get_length():
+            raise Exception(f"Point {point} is out of bounds. Room length: {self.get_length()}")
+        for wall in self.walls:
+            if point <= wall.length:
+                return wall.get_feature(point)
+            point -= wall.length
