@@ -1,6 +1,6 @@
 VALID_WALL_BREAK_TYPES = ["window", "entrance door", "miscellaneous door"]
 
-class WallBreaks:
+class WallBreak:
     def __init__(self, position: int, width: int, type: str):
         self.position = position
         if self.position < 0:
@@ -26,36 +26,54 @@ class WallBreaks:
         return self.position >= other.position
 
     def __str__(self):
-        return f"Wall break position: {self.position}, width: {self.width}, type: {self.type}"
+        return f"{self.type} of width {self.width} at position {self.position}"
 
     def get_end_point(self):
         return self.position + self.width
 
-class Room:
-    def __init__(self, dimension_ratio: float, wall_breaks: [WallBreaks]):
-        self.dimension_ratio = dimension_ratio
-        if self.dimension_ratio <= 0:
-            raise Exception(f"Dimension ratio must be greater than 0. Input dimension ratio: {self.dimension_ratio}")
-        
+VALID_DIRECTION = ["north", "south", "east", "west"]  
+class Wall:
+    def __init__ (self, length: int, wall_breaks: [WallBreak], direction: str):
         self.wall_breaks = wall_breaks
         self.wall_breaks.sort()
+        self.length = length
+
+        if direction not in VALID_DIRECTION:
+            raise Exception(f"Invalid wall direction: {direction}")
+        self.direction = direction
+
+        wall_breaks = sorted(wall_breaks)
         for i, wall_break in enumerate(wall_breaks):
             if i == 0: continue
-            if wall_break.position < self.wall_breaks[i-1].get_end_point():
-                raise Exception(f"Wall breaks cannot overlap. Overlapping wall break: {self.wall_breaks[i-1]} and {wall_break}")
+            if wall_break.position < wall_breaks[i-1].get_end_point():
+                raise Exception(f"Wall breaks overlap. Wall break {wall_break} overlaps with wall break {wall_breaks[i-1]}")
+            if wall_break.position + wall_break.width > self.length:
+                raise Exception(f"Wall break {wall_break} is out of bounds. Wall length: {self.length}")
+          
+class Room:
+    def __init__ (self, walls: [Wall]):
+        self.walls = walls
+
+        HOME_POSITION = (0, 0)
+        current_position = HOME_POSITION
+
+        for i, wall in enumerate(walls):
+            # checks if walls are oriented in impossible directions
+            if i != 0:
+                if wall.direction == walls[i-1].direction:
+                    raise Exception(f"Consecutive wall directions cannot be the same. Wall {i} direction: {wall.direction}. Wall {i-1} direction: {walls[i-1].direction}")
+                if walls[i-1].direction == "north" and wall.direction == "south" or \
+                   walls[i-1].direction == "south" and wall.direction == "north" or \
+                   walls[i-1].direction == "east" and wall.direction == "west" or \
+                   walls[i-1].direction == "west" and wall.direction == "east": 
+                    raise Exception (f"Consecutive wall directions cannot be opposite. Wall {i} direction: {wall.direction}. Wall {i-1} direction: {walls[i-1].direction}")
+            
+            # traces walls to see if they close the room
+            if wall.direction == "north": current_position = (current_position[0], current_position[1] + wall.length)
+            elif wall.direction == "south": current_position = (current_position[0], current_position[1] - wall.length)
+            elif wall.direction == "east": current_position = (current_position[0] + wall.length, current_position[1])
+            elif wall.direction == "west": current_position = (current_position[0] - wall.length, current_position[1])
+            # note: this should never happen, because the direction is checked in the Wall class
+            else: raise Exception(f"Invalid wall direction: {wall.direction}")
         
-        def get_corner_points(self):
-            corner_points = []
-
-            horizontal_wall_length = 50-(50/(self.dimension_ratio+1))
-            vertical_wall_length = 50-horizontal_wall_length
-
-            corner_points.append(0)
-            corner_points.append(horizontal_wall_length)
-            corner_points.append(50)
-            corner_points.append(100-vertical_wall_length)
-
-            corner_points = [round(point, 3) for point in corner_points]
-
-            return corner_points
-        self.corner_points = get_corner_points()
+        if current_position != HOME_POSITION: raise Exception(f"Room is not closed. End wall terminates at: {current_position}")

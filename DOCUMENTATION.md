@@ -1,42 +1,27 @@
 # Feng Shui Calculator Documentation
 
 ### In progress:
-- [ ] Implement a system to represent rooms in code
+1. Implement a system to represent rooms in code
 
 ### To do:
-- [ ] Create an evaluation function that determines how well a given bed placement adheres to the rules of Feng Shui
-- [ ] Create an API that takes room configuration as an input and produces the optimal bed placement as an output
-- [ ] Create a web app that allows users to input their room configuration and see the optimal bed placement
+2. Create an evaluation function that determines how well a given bed placement adheres to the rules of Feng Shui
+3. Create an API that takes room configuration as an input and produces the optimal bed placement as an output
+4. Create a web app that allows users to input their room configuration and see the optimal bed placement
 
 ## Room Representation
-### Current Limitations
-In its current state, this app can only represent rectangular rooms. For the purpose of visualization, assume a birds-eye view of the room.
+### Current Limitations:
+Walls but be perpendicular to each other. This means that rooms with diagonal or curved walls cannot be represented.
 
-### Current Implementation
-To represent a specific room, the following information is needed:
-1. The ratio between the horizontal walls' lengths and the vertical walls' lengths
-2. A list of features of the room’s walls and their locations. <br>
-    a) To describe a feature’s location, use the distance from the upper left corner along the path tracing the walls clockwise. Location is in units as a percentage of the room’s total perimeter, to the nearest 3 significant figures. <br>
-    b) To describe a feature’s length, the units are the percentage of the perimeter the feature takes up, to the nearest 3 significant figures.
+### Room Object
+The Room object is a list of Wall objects that form a closed polygon. The order of the walls in the list is important, as it determines the order in which the walls are connected to each other. The first wall in the list is connected to the second wall, the second wall is connected to the third wall, and so on. The last wall in the list is connected to the first wall.
 
-The below are some examples, with estimations on location and length of features. The location and length of features are not exact, but are close enough to give a good idea of the room's layout.
-#### Example 1
-<center><img src="example_room_1.png" alt="Example Room" width="100"/></center>
-Dimension Ratio: 1 <br>
-Approximate Features:
-<ol>
-    <li> Entrance door position at position 2, width 8 </li>
-    <li> Window at position 30, width 12 </li>
-</ol>
-Corners: [0, 25, 50, 75]
+#### Wall Object
+The wall object is meant to represent a wall in a room, as well as its orientation relative to the previous wall. It contains WallBreak objects to represent doors, windows, and the like.
+    - `length`: The length of the wall in in whatever units the user desires, just ensure it is consistent throughout the room.
+    - `wall_breaks`: A list of WallBreak objects. 
+    - `direction`: The direction the wall extends in relative to the previous wall (only useful in the context of the Room object).
 
-#### Example 2
-<center><img src="example_room_2.png" alt="Example Room" width="200"/></center>
-Dimension Ratio: 2 <br>
-Approximate Features:
-<ol>
-    <li> Entrance door at position 25, width 4 </li>
-    <li> Window at position 36, width 11 </li>
-    <li> Window at position 86, width 11 </li>
-</ol>
-Corners: [0, 33.333, 50, 83.333]
+#### WallBreak Object
+The WallBreak object represents doors, windows, or any interruption in the wall.
+    - `position`: The position of the wall break along the wall, in units consistent with the Wall object.
+    - `length`: The length of the wall break, in units consistent with the Wall object.
