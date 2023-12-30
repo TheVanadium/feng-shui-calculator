@@ -86,7 +86,11 @@ class Room:
         
         if current_position != HOME_POSITION: raise Exception(f"Room is not closed. End wall terminates at: {current_position}")
 
-    def get_length(self):
+    def get_length(self) -> int:
+        """Gets the length of the room, the sum of the lengths of all walls.
+        
+        Returns:
+            The length of the room."""
         length = 0
         for wall in self.walls:
             length += wall.length
