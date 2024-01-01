@@ -44,13 +44,14 @@ class Wall:
 
         wall_breaks = sorted(wall_breaks)
         for i, wall_break in enumerate(wall_breaks):
+            if wall_break.position + wall_break.width > self.length:
+                raise Exception(f"Wall break {wall_break} is out of bounds. Wall length: {self.length}")
             if i == 0: continue
             if wall_break.position < wall_breaks[i-1].get_end_point():
                 raise Exception(f"Wall breaks overlap. Wall break {wall_break} overlaps with wall break {wall_breaks[i-1]}")
-            if wall_break.position + wall_break.width > self.length:
-                raise Exception(f"Wall break {wall_break} is out of bounds. Wall length: {self.length}")
             
     def get_feature(self, point: int):
+        # Note: if there are two adjacent features on the same point, the one that is first in the list is returned
         if point < 0 or point > self.length:
             raise Exception(f"Point {point} is out of bounds. Wall length: {self.length}")
         for wall_break in self.wall_breaks:
@@ -96,41 +97,40 @@ class Room:
             length += wall.length
         return length
 
-    def get_feature(self, wall_index: int, point: int):
+    def get_feature(self, point: int, wall_index: int=None):
         """Gets the feature of a wall at a given point.
         
         Args:
-            wall_index (int): The index of the wall to check.
+            wall_index (int) (optional): The index of the wall to check. If not given, the wall is found by the point.
             point (int): The point to check.
             
         Returns:
-            The feature of the given wall at the given point.
+            The feature of the given wall at the given point. If the point is not on a wall break, returns None.
+            If the wall index is not given, returns the feature of the point is determined by tracing the walls.
 
         Raises:
             Exception: If the wall index is out of bounds.
-        """
-        if wall_index < 0 or wall_index >= len(self.walls):
-            raise Exception(f"Wall index {wall_index} is out of bounds. Number of walls: {len(self.walls)}")
-        return self.walls[wall_index].get_feature(point)
-
-    def get_feature(self, point: int):
-        """Gets the feature of a room at a given point
-        
-        The point is relative to the first corner of the room (HOME_POSITION, as described
-        in __init__()), traversing along the walls in the order they were given.
-
-        Args:
-            point (int): The point to check.
-
-        Returns:
-            The feature of the room at the given point.
-
-        Raises:
             Exception: If the point is out of bounds.
         """
-        if point < 0 or point > self.get_length():
-            raise Exception(f"Point {point} is out of bounds. Room length: {self.get_length()}")
-        for wall in self.walls:
-            if point <= wall.length:
-                return wall.get_feature(point)
-            point -= wall.length
+        if wall_index is None:
+            if point < 0 or point > self.get_length():
+                raise Exception(f"Point {point} is out of bounds. Room length: {self.get_length()}")
+            for wall in self.walls:
+                if point <= wall.length:
+                    return wall.get_feature(point)
+                point -= wall.length
+
+        if wall_index < 0 or wall_index >= len(self.walls):
+            raise Exception(f"Wall index {wall_index} is out of bounds. Number of walls: {len(self.walls)}")
+        print (len(self.walls))
+        return self.walls[wall_index].get_feature(point)
+
+if __name__ == "__main__":
+    wall_break_1 = WallBreak(2, 4, "window")
+    wall_break_2 = WallBreak(10, 3, "entrance door")
+    walls = [
+        Wall(5, [wall_break_1], "north"),
+        Wall(7, [wall_break_2], "east"),
+        Wall(5, [], "south"),
+        Wall(7, [], "west")
+    ]
