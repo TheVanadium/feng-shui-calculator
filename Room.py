@@ -49,6 +49,14 @@ class Wall:
                 raise Exception(f"Wall breaks overlap. Wall break {wall_break} overlaps with wall break {wall_breaks[i-1]}")
             if wall_break.position + wall_break.width > self.length:
                 raise Exception(f"Wall break {wall_break} is out of bounds. Wall length: {self.length}")
+            
+    def get_feature(self, point: int):
+        if point < 0 or point > self.length:
+            raise Exception(f"Point {point} is out of bounds. Wall length: {self.length}")
+        for wall_break in self.wall_breaks:
+            if point >= wall_break.position and point <= wall_break.get_end_point():
+                return wall_break.type
+        return None
           
 class Room:
     def __init__ (self, walls: [Wall]):
@@ -77,3 +85,52 @@ class Room:
             else: raise Exception(f"Invalid wall direction: {wall.direction}")
         
         if current_position != HOME_POSITION: raise Exception(f"Room is not closed. End wall terminates at: {current_position}")
+
+    def get_length(self) -> int:
+        """Gets the length of the room, the sum of the lengths of all walls.
+        
+        Returns:
+            The length of the room."""
+        length = 0
+        for wall in self.walls:
+            length += wall.length
+        return length
+
+    def get_feature(self, wall_index: int, point: int):
+        """Gets the feature of a wall at a given point.
+        
+        Args:
+            wall_index (int): The index of the wall to check.
+            point (int): The point to check.
+            
+        Returns:
+            The feature of the given wall at the given point.
+
+        Raises:
+            Exception: If the wall index is out of bounds.
+        """
+        if wall_index < 0 or wall_index >= len(self.walls):
+            raise Exception(f"Wall index {wall_index} is out of bounds. Number of walls: {len(self.walls)}")
+        return self.walls[wall_index].get_feature(point)
+
+    def get_feature(self, point: int):
+        """Gets the feature of a room at a given point
+        
+        The point is relative to the first corner of the room (HOME_POSITION, as described
+        in __init__()), traversing along the walls in the order they were given.
+
+        Args:
+            point (int): The point to check.
+
+        Returns:
+            The feature of the room at the given point.
+
+        Raises:
+            Exception: If the point is out of bounds.
+        """
+        if point < 0 or point > self.get_length():
+            raise Exception(f"Point {point} is out of bounds. Room length: {self.get_length()}")
+        for wall in self.walls:
+            if point <= wall.length:
+                return wall.get_feature(point)
+            point -= wall.length
