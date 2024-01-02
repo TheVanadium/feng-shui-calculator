@@ -124,13 +124,3 @@ class Room:
             raise Exception(f"Wall index {wall_index} is out of bounds. Number of walls: {len(self.walls)}")
         print (len(self.walls))
         return self.walls[wall_index].get_feature(point)
-
-if __name__ == "__main__":
-    wall_break_1 = WallBreak(2, 4, "window")
-    wall_break_2 = WallBreak(10, 3, "entrance door")
-    walls = [
-        Wall(5, [wall_break_1], "north"),
-        Wall(7, [wall_break_2], "east"),
-        Wall(5, [], "south"),
-        Wall(7, [], "west")
-    ]
