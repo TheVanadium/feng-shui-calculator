@@ -124,3 +124,51 @@ class Room:
             raise Exception(f"Wall index {wall_index} is out of bounds. Number of walls: {len(self.walls)}")
         print (len(self.walls))
         return self.walls[wall_index].get_feature(point)
+
+    def get_opposing_feature(self, point: int, wall_index: int=None):
+        """Gets the feature of the opposing wall at a given point.
+        
+        Args:
+            wall_index (int) (optional): The index of the wall to check. If not given, the wall is found by the point.
+            point (int): The point to check.
+            
+        Returns:
+            The feature of the opposing wall at the given point. If the point is not on a wall break, returns None.
+            If the wall index is not given, returns the feature of the point is determined by tracing the walls.
+
+        Raises:
+            Exception: If the wall index is out of bounds.
+            Exception: If the point is out of bounds.
+        """
+        # get wall of point, to get point-wall form (changes point to be relative to wall)
+        if wall_index is None:
+            wall_index = 0
+            if point < 0 or point > self.get_length():
+                raise Exception(f"Point {point} is out of bounds. Room length: {self.get_length()}")
+            for wall in self.walls:
+                if point <= wall.length:
+                    break
+                point -= wall.length
+                wall_index += 1
+
+        # get direction of wall
+        wall_direction = self.walls[wall_index].direction
+        opposite_directions = {
+            "north": "south",
+            "south": "north",
+            "east": "west",
+            "west": "east"
+        }
+        # find opposing wall, which is the first wall with the opposite direction which length > wall.length - point
+        opposing_wall_index = wall_index
+        while True:
+            opposing_wall_index = (opposing_wall_index + 1) % len(self.walls)
+            if self.walls[opposing_wall_index].direction == opposite_directions[wall_direction] and \
+               self.walls[opposing_wall_index].length >= len(self.walls) - point:
+                print (f"Opposite of wall is {opposing_wall_index}")
+                break
+            if opposing_wall_index == wall_index:
+                # this should never happen, because the room is closed
+                raise Exception(f"Could not find opposing wall for wall {wall_index} with direction {wall_direction} at point {point}")
+        # get feature of opposing wall at point
+        return self.walls[opposing_wall_index].get_feature(self.walls[opposing_wall_index].length - point)
